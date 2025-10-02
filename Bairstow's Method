@@ -1,0 +1,62 @@
+Roots=[]
+dr, ds = var('dr, ds')
+R.<x> = QQ[] 
+f=         #function : note that this only accepts rationals, approximate nonrationals with ".n(30)"
+r=         #first guess r
+s=         #first guess s
+e=         #error
+for l in range(0,200000,1):
+    C=f.list()
+    L=f.list()
+    D=f.degree()
+    if(D==1):
+        Roots.append(-L[0]/L[1])
+        break
+    if(D==2):
+        Roots.append((-L[1].n(53)+sqrt(L[1]*L[1]-(4*L[2]*L[0])))/(2*L[2]))
+        Roots.append((-L[1].n(53)-sqrt(L[1]*L[1]-(4*L[2]*L[0])))/(2*L[2]))
+        break
+    if(D>=3):
+        n=f.degree()
+        b=[]
+        c=[]
+        for j in range(0,n+1,1):
+            b.append(0)
+            c.append(0)
+        b[n]=L[n].n(53)
+        b[n-1]=L[n-1].n(53) + r.n(53)*b[n].n(53)
+        i = n-2
+        while(i>=0):
+            b[i]=L[i].n(53) + r.n(53)*b[i+1].n(53) + s.n(53)*b[i+2].n(53)
+            i=i-1
+        c[n]=b[n].n(53)
+        c[n-1]=b[n-1].n(53) + r*c[n].n(53)
+        i = n-2
+        while(i>-1):
+            c[i]=b[i].n(53) + r.n(53)*c[i+1].n(53) + s.n(53)*c[i+2].n(53)
+            i=i-1
+        solns=solve([c[1]*dr+c[2]*ds ==-b[0],c[2]*dr+c[3]*ds ==-b[1]],dr,ds, solution_dict=True)
+        S=[[p[dr].n(53), p[ds].n(53)] for p in solns]
+        if((abs((100*S[0][0])/(r+S[0][0]))) >= e  or (abs((100*S[0][1])/(s+S[0][1]))) >= e):
+            r=r+S[0][0]
+            s=s+S[0][1]
+            continue
+        r=r+S[0][0]
+        s=s+S[0][1]
+        rnew=(r+sqrt(r^(2)+(4*(s))))/(2)
+        snew=(r-sqrt(r^(2)+(4*(s))))/(2)
+        r=rnew
+        s=snew
+        if(abs(r.imag())<1*10^(-8)):
+            r=r.real()
+        if(abs(s.imag())<1*10^(-8)):
+            s=s.real()
+        Roots.append(r)
+        Roots.append(s)
+        r=r.real()
+        s=s.real()
+        #print(l,Roots) #print iterations and roots
+        f=0
+        for t in range(2,len(b),1):
+            f=f+b[t]*x^(t-2)
+print(Roots) 
